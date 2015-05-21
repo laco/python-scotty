@@ -91,9 +91,9 @@ def _register_task_definition(ctx, tag):
         }
 
     def _get_one_env(ctx, env_name):
-        if env_name in ctx.obj['cluster']['config']['context']:
+        if env_name in ctx.obj['cluster']['config'].get('context', {}):
             value = ctx.obj['cluster']['config']['context'][env_name]
-        elif env_name in ctx.obj['service']['config']['context']:
+        elif env_name in ctx.obj['service']['config'].get('context', {}):
             value = ctx.obj['service']['config']['context'][env_name]
         elif env_name in ctx.obj['config']['globals']['context']:
             value = ctx.obj['config']['globals']['context'][env_name]
