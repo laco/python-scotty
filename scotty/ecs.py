@@ -41,7 +41,7 @@ def _init_ecs_connection(ctx):
     result_ = ctx.obj['ecs_conn'].list_clusters()
     cccount_ = len(result_['clusterArns'])
     if cccount_ >= 1:
-        log(ctx, 'I found {} cluster(s) in this region.'.format(cccount_))
+        log(ctx, 'I found {0} cluster(s) in this region.'.format(cccount_))
         return ctx
     else:
         raise Exception('Missing clusters! Check the "region" settings!')
@@ -98,7 +98,7 @@ def _register_task_definition(ctx, tag):
         elif env_name in ctx.obj['config']['globals']['context']:
             value = ctx.obj['config']['globals']['context'][env_name]
         else:
-            raise ValueError('Missing env variable: {}'.format(env_name))
+            raise ValueError('Missing env variable: {0}'.format(env_name))
         return {
             'name': env_name,
             'value': value,
@@ -148,7 +148,7 @@ def _create_services(ctx, task_def):
             desiredCount=2 if i == 0 else 0,  # just the first!
         )
         # log(ctx, str(result_))
-        log(ctx, '{} is created'.format(sn))
+        log(ctx, '{0} is created'.format(sn))
         if result_['service']:
             ret.append(result_['service'])
     return ret
@@ -161,7 +161,7 @@ def _update_services_with_canary(ctx, service_descriptions, task_def, strategy):
             cluster=ctx.obj['cluster']['name'],
             service=service_name, desiredCount=max(0, current_desired_count - 1))
 
-        log(ctx, '{}: decrement desired count (-1)'.format(service_name))
+        log(ctx, '{0}: decrement desired count (-1)'.format(service_name))
         return service_name, current_desired_count - 1, current_desired_count - 1  # FIXME!
 
     def _increment_desired_count(service_name, current_desired_count, new_task_def):
@@ -171,7 +171,7 @@ def _update_services_with_canary(ctx, service_descriptions, task_def, strategy):
             taskDefinition=new_task_def,
             desiredCount=max(2, current_desired_count + 1))
 
-        log(ctx, '{}: increment desired count (+1)'.format(service_name))
+        log(ctx, '{0}: increment desired count (+1)'.format(service_name))
         return service_name, current_desired_count + 1, current_desired_count + 1  # FIXME!
 
     _inactive_services = [(sd['serviceName'], sd['runningCount'], sd['desiredCount']) for sd in service_descriptions if sd['desiredCount'] == 0]
