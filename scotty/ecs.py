@@ -71,11 +71,11 @@ def _register_task_definition(ctx, tag):
 
     def _get_one_td_c_def(ctx, family_name, index, cconfig, tag):
         return {
-            'name': '__c'.join([family_name, str(index)]),  # name
+            'name': cconfig.get('name', '__c'.join([family_name, str(index)])),  # name
             'image': ':'.join([cconfig['image_path'], tag]),  # image FIXME this is just for the first container!
             'cpu': cconfig['cpu'],
             'memory': cconfig['memory'],
-            'links': [],
+            'links': cconfig.get('links', []),
             'portMappings': [_get_one_pm(cc_pm) for cc_pm in cconfig['ports']],  # FIXME
             'essential': cconfig.get('essential') or True,
             'entryPoint': [],
