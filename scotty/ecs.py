@@ -131,6 +131,13 @@ def _get_services(ctx):
         return []
 
 
+def _get_task_count(ctx):
+    return ctx.obj['service']['config'].get(
+        'task_count', ctx.obj['cluster']['config'].get(
+            'task_count', ctx.obj['config']['globals'].get(
+                'task_count', 2))) or 2
+
+
 def _get_service_names(ctx):
     prefix = _get_td_family_name(ctx)
     return [prefix + '__s' + str(i) for i in range(0, 2)]
@@ -145,7 +152,7 @@ def _create_services(ctx, task_def):
             cluster=ctx.obj['cluster']['name'],
             serviceName=sn,
             taskDefinition=task_def,
-            desiredCount=2 if i == 0 else 0,  # just the first!
+            desiredCount=_get_task_count(ctx) if i == 0 else 0,  # just the first!
         )
         # log(ctx, str(result_))
         log(ctx, '{0} is created'.format(sn))
@@ -169,7 +176,7 @@ def _update_services_with_canary(ctx, service_descriptions, task_def, strategy):
             cluster=ctx.obj['cluster']['name'],
             service=service_name,
             taskDefinition=new_task_def,
-            desiredCount=max(2, current_desired_count + 1))
+            desiredCount=min(_get_task_count(ctx), current_desired_count + 1))
 
         log(ctx, '{0}: increment desired count (+1)'.format(service_name))
         return service_name, current_desired_count + 1, current_desired_count + 1  # FIXME!
@@ -191,7 +198,7 @@ def _update_services_with_canary(ctx, service_descriptions, task_def, strategy):
             ca_running=canary[1],
             ca_desired=canary[2]
         ))
-        while current[2] > 0:
+        while current[2] > 0 or canary[2] < _get_task_count(ctx):
             current = _decrement_desired_count(current[0], current[2])
             canary = _increment_desired_count(canary[0], canary[2], task_def)
-            sleep(20)
+            sleep(15)  # TODO: check result!
