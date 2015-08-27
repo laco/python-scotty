@@ -84,11 +84,17 @@ def _register_task_definition(ctx, tag):
         }
 
     def _get_one_pm(ports_str):
-        host, container = ports_str.split(':')
-        return {
-            'containerPort': int(container),
-            'hostPort': int(host)
-        }
+        ports = [p for p in ports_str.split(':') if p not in [None, '', '0']]
+        if len(ports) == 2:            
+            host, container = ports[0], ports[1]
+            return {
+                'containerPort': int(container),
+                'hostPort': int(host)
+            }
+        elif len(ports) == 1:
+            return {'containerPort': int(ports[0])}
+        else:
+            return {}
 
     def _get_one_env(ctx, env_name):
         if env_name in ctx.obj['cluster']['config'].get('context', {}):

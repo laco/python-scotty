@@ -60,3 +60,4 @@ ve
 .ipynb_checkpoints/
 *.ipynb
 scotty.yml
+.ve
