@@ -85,7 +85,7 @@ def _register_task_definition(ctx, tag):
 
     def _get_one_pm(ports_str):
         ports = [p for p in ports_str.split(':') if p not in [None, '', '0']]
-        if len(ports) == 2:            
+        if len(ports) == 2:
             host, container = ports[0], ports[1]
             return {
                 'containerPort': int(container),
@@ -131,10 +131,8 @@ def _get_services(ctx):
     service_names = _get_service_names(ctx)
     result_ = ctx.obj['ecs_conn'].describe_services(services=service_names, cluster=ctx.obj['cluster']['name'])
     # log(ctx, str(result_))
-    if result_['services']:
-        return result_['services']
-    else:
-        return []
+    services = [service for service in result_['services'] if service['status'] != 'INACTIVE']
+    return services
 
 
 def _get_task_count(ctx):
