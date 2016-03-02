@@ -6,7 +6,7 @@ from .core import log, SCOTTY_PREFIX
 import boto3
 
 
-def ecs_connection(region_name):
+def ecs_connection(region_name='us-east-1'):
     # """The original boto function is broken on python3, this works!"""
 
     # def regions():
@@ -18,7 +18,7 @@ def ecs_connection(region_name):
     #             return region.connect(**kw_params)
     #     return None
     # return connect_to_region(region_name)
-    return boto3.client('ecs', region_name='us-east-1')
+    return boto3.client('ecs', region_name=region_name)
 
 
 def deploy(ctx, tag, strategy='canary'):
