@@ -73,8 +73,8 @@ def _register_task_definition(ctx, tag):
         return {
             'name': cconfig.get('name', '__c'.join([family_name, str(index)])),  # name
             'image': ':'.join([cconfig['image_path'], tag]),  # image FIXME this is just for the first container!
-            'cpu': cconfig['cpu'],
-            'memory': cconfig['memory'],
+            'cpu': cconfig.get(ctx.obj['cluster']['name'], {}).get('cpu') or cconfig['cpu'],
+            'memory': cconfig.get(ctx.obj['cluster']['name'], {}).get('memory') or cconfig['memory'],
             'links': cconfig.get('links', []),
             'portMappings': [_get_one_pm(cc_pm) for cc_pm in cconfig['ports']],  # FIXME
             'essential': cconfig.get('essential') or True,
@@ -136,7 +136,8 @@ def _get_services(ctx):
 
 
 def _get_task_count(ctx):
-    return ctx.obj['service']['config'].get(
+    return ctx.obj['service']['config'].get(ctx.obj['cluster']['name'], {}).get('task_count') or \
+        ctx.obj['service']['config'].get(
         'task_count', ctx.obj['cluster']['config'].get(
             'task_count', ctx.obj['config']['globals'].get(
                 'task_count', 2))) or 2
@@ -202,6 +203,11 @@ def _update_services_with_canary(ctx, service_descriptions, task_def, strategy):
             ca_running=canary[1],
             ca_desired=canary[2]
         ))
+
+        # if desired count was set to 0 manually
+        if current[2] == 0:
+            current[2] = _get_task_count(ctx)
+
         while current[2] > 0 or canary[2] < _get_task_count(ctx):
             current = _decrement_desired_count(current[0], current[2])
             canary = _increment_desired_count(canary[0], canary[2], task_def)
